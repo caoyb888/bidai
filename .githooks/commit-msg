@@ -1,0 +1,38 @@
+#!/bin/bash
+# commit-msg hook: 验证提交信息是否符合 Conventional Commits 规范
+
+COMMIT_MSG_FILE="$1"
+COMMIT_MSG=$(head -n 1 "$COMMIT_MSG_FILE")
+
+# 允许 merge、revert、cherry-pick 等系统提交
+if echo "$COMMIT_MSG" | grep -qE '^(Merge|Revert|cherry picked|\[cherry-pick\])'; then
+    exit 0
+fi
+
+# 允许以 # 开头的注释行（空提交信息或仅注释）
+if [ -z "$COMMIT_MSG" ] || echo "$COMMIT_MSG" | grep -qE '^#'; then
+    exit 0
+fi
+
+# Conventional Commits 正则匹配
+PATTERN='^(feat|fix|refactor|test|docs|chore)(\([a-z0-9-]+\))?: .+'
+
+if ! echo "$COMMIT_MSG" | grep -qE "$PATTERN"; then
+    echo "========================================"
+    echo "❌ 提交信息不符合 Conventional Commits 规范"
+    echo ""
+    echo "正确格式: type(scope): subject"
+    echo ""
+    echo "type 类型: feat | fix | refactor | test | docs | chore"
+    echo "scope 范围: bid-parser | bid-writer | auth | infra | docs | ..."
+    echo ""
+    echo "示例:"
+    echo "  feat(bid-writer): add section generation API"
+    echo "  fix(auth): resolve token refresh issue"
+    echo "  docs: update API specification"
+    echo "========================================"
+    exit 1
+fi
+
+echo "✅ 提交信息格式检查通过"
+exit 0

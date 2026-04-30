@@ -1,0 +1,25 @@
+# 遵循 Conventional Commits 规范
+# 格式: type(scope): subject
+#
+# type 类型:
+#   feat     新功能
+#   fix      修复bug
+#   refactor 代码重构
+#   test     测试相关
+#   docs     文档更新
+#   chore    构建/工具/其他杂项
+#
+# scope 范围（可选）:
+#   bid-parser | bid-writer | bid-review | collusion-analysis
+#   knowledge | win-rate | project | auth | export | notify
+#   bid-web | bid-mobile | infra | docs
+#
+# 示例:
+#   feat(bid-writer): add three-way routing for section generation
+#   fix(auth): resolve JWT token refresh race condition
+#   docs(api): update bidding endpoint documentation
+#
+# 注意：禁止直接向 main/master 分支推送，必须通过 PR + Code Review
+#
+# ------------------------ >8 ------------------------
+# 请勿修改下方分隔线以上的内容作为提交信息
