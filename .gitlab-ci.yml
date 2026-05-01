@@ -122,8 +122,5 @@ build:gitlab-infra:
       echo "✅ GitLab infra config valid"
   rules:
     - if: '$CI_PIPELINE_SOURCE == "push"'
-      changes:
-        - infra/docker/docker-compose.gitlab.yml
-        - infra/docker/docker-compose.dev.yml
 # Restarted at Fri May  1 05:47:07 PM CST 2026
 # network fix at Fri May  1 05:48:00 PM CST 2026
