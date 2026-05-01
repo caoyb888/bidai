@@ -1,0 +1,127 @@
+# ============================================================
+# GitLab CI 基础流水线 — AI 智能投标系统
+# Story: S0-003
+# 目标：push 代码自动触发 CI，lint/test/build 三阶段可运行
+# 随着 Sprint 进展，各服务将逐步补充具体 job
+# ============================================================
+
+stages:
+  - lint
+  - test
+  - build
+
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
+  # 禁用交互式 git 提示
+  GIT_DEPTH: 10
+
+# ----------------------------------------------------------
+# Lint 阶段：代码/配置格式与规范检查
+# ----------------------------------------------------------
+lint:commit-msg:
+  stage: lint
+  image: alpine:latest
+  script:
+    - apk add --no-cache bash
+    - |
+      echo "Checking commit message template and hooks..."
+      test -f .gitmessage || exit 1
+      test -f .githooks/commit-msg || exit 1
+      test -x .githooks/commit-msg || exit 1
+      echo "✅ Commit convention tools present"
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+
+lint:docker-compose:
+  stage: lint
+  image: docker:24-cli
+  services:
+    - docker:24-dind
+  script:
+    - |
+      echo "Linting Docker Compose files..."
+      docker compose -f infra/docker/docker-compose.dev.yml config > /dev/null
+      docker compose -f infra/docker/docker-compose.gitlab.yml config > /dev/null
+      echo "✅ Docker Compose syntax valid"
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - infra/docker/*.yml
+        - infra/docker/**/*.yml
+
+lint:docs:
+  stage: lint
+  image: alpine:latest
+  script:
+    - |
+      echo "Checking documentation files..."
+      test -f docs/AI智能投标系统技术方案.md || exit 1
+      test -f docs/API_Spec_BidAI_v1.0.md || exit 1
+      test -f docs/database-design.md || exit 1
+      test -f docs/Sprint_Plan_BidAI_v1.0.md || exit 1
+      test -f CLAUDE.md || exit 1
+      echo "✅ Core documentation present"
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - docs/**
+        - CLAUDE.md
+
+# ----------------------------------------------------------
+# Test 阶段：结构/逻辑验证（随着服务脚手架完善将逐步扩充）
+# ----------------------------------------------------------
+test:project-structure:
+  stage: test
+  image: alpine:latest
+  script:
+    - |
+      echo "Validating project structure per CLAUDE.md..."
+      # 核心规范文件
+      test -f CLAUDE.md || exit 1
+      test -f .gitignore || exit 1
+      # 基础设施目录
+      test -d infra/docker || exit 1
+      test -d docs || exit 1
+      # Git 规范工具
+      test -f .gitmessage || exit 1
+      test -d .githooks || exit 1
+      echo "✅ Project structure validation passed"
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+
+# ----------------------------------------------------------
+# Build 阶段：Docker 镜像构建（当前仅 ES 镜像，后续扩展）
+# ----------------------------------------------------------
+build:elasticsearch:
+  stage: build
+  image: docker:24-cli
+  services:
+    - docker:24-dind
+  script:
+    - |
+      echo "Building Elasticsearch + IK image..."
+      cd infra/docker/elasticsearch
+      docker build -t bidai/elasticsearch:ci-$CI_COMMIT_SHORT_SHA .
+      echo "✅ Elasticsearch image built"
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - infra/docker/elasticsearch/**
+
+build:gitlab-infra:
+  stage: build
+  image: docker:24-cli
+  services:
+    - docker:24-dind
+  script:
+    - |
+      echo "Validating GitLab Docker Compose infrastructure..."
+      cd infra/docker
+      docker compose -f docker-compose.gitlab.yml config > /dev/null
+      echo "✅ GitLab infra config valid"
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - infra/docker/docker-compose.gitlab.yml
+        - infra/docker/docker-compose.dev.yml
