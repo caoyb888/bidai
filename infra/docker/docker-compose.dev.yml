@@ -190,6 +190,153 @@ services:
       - bidai-dev
 
   # ----------------------------------------------------------
+  # Python 微服务 — 开发环境（按需启动，通过 profile: python）
+  # ----------------------------------------------------------
+  bid-parser-service:
+    build:
+      context: ../../services/python/bid-parser-service
+      dockerfile: Dockerfile
+    container_name: bidai-bid-parser-service
+    restart: unless-stopped
+    environment:
+      - APP_ENV=development
+      - DATABASE_URL=postgresql+asyncpg://bidai:bidai_dev_pass@bidai-postgres:5432/bidai
+      - REDIS_URL=redis://:bidai_redis_pass@bidai-redis:6379/0
+    ports:
+      - "8001:8000"
+    volumes:
+      - ../../services/python/bid-parser-service/app:/app/app:ro
+    networks:
+      - bidai-dev
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    profiles:
+      - python
+
+  bid-writer-service:
+    build:
+      context: ../../services/python/bid-writer-service
+      dockerfile: Dockerfile
+    container_name: bidai-bid-writer-service
+    restart: unless-stopped
+    environment:
+      - APP_ENV=development
+      - DATABASE_URL=postgresql+asyncpg://bidai:bidai_dev_pass@bidai-postgres:5432/bidai
+      - REDIS_URL=redis://:bidai_redis_pass@bidai-redis:6379/0
+    ports:
+      - "8002:8000"
+    volumes:
+      - ../../services/python/bid-writer-service/app:/app/app:ro
+    networks:
+      - bidai-dev
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    profiles:
+      - python
+
+  bid-review-service:
+    build:
+      context: ../../services/python/bid-review-service
+      dockerfile: Dockerfile
+    container_name: bidai-bid-review-service
+    restart: unless-stopped
+    environment:
+      - APP_ENV=development
+      - DATABASE_URL=postgresql+asyncpg://bidai:bidai_dev_pass@bidai-postgres:5432/bidai
+      - REDIS_URL=redis://:bidai_redis_pass@bidai-redis:6379/0
+    ports:
+      - "8003:8000"
+    volumes:
+      - ../../services/python/bid-review-service/app:/app/app:ro
+    networks:
+      - bidai-dev
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    profiles:
+      - python
+
+  collusion-analysis-service:
+    build:
+      context: ../../services/python/collusion-analysis-service
+      dockerfile: Dockerfile
+    container_name: bidai-collusion-analysis-service
+    restart: unless-stopped
+    environment:
+      - APP_ENV=development
+      - DATABASE_URL=postgresql+asyncpg://bidai:bidai_dev_pass@bidai-postgres:5432/bidai
+      - REDIS_URL=redis://:bidai_redis_pass@bidai-redis:6379/0
+    ports:
+      - "8004:8000"
+    volumes:
+      - ../../services/python/collusion-analysis-service/app:/app/app:ro
+    networks:
+      - bidai-dev
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    profiles:
+      - python
+
+  knowledge-service:
+    build:
+      context: ../../services/python/knowledge-service
+      dockerfile: Dockerfile
+    container_name: bidai-knowledge-service
+    restart: unless-stopped
+    environment:
+      - APP_ENV=development
+      - DATABASE_URL=postgresql+asyncpg://bidai:bidai_dev_pass@bidai-postgres:5432/bidai
+      - REDIS_URL=redis://:bidai_redis_pass@bidai-redis:6379/0
+    ports:
+      - "8005:8000"
+    volumes:
+      - ../../services/python/knowledge-service/app:/app/app:ro
+    networks:
+      - bidai-dev
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    profiles:
+      - python
+
+  win-rate-service:
+    build:
+      context: ../../services/python/win-rate-service
+      dockerfile: Dockerfile
+    container_name: bidai-win-rate-service
+    restart: unless-stopped
+    environment:
+      - APP_ENV=development
+      - DATABASE_URL=postgresql+asyncpg://bidai:bidai_dev_pass@bidai-postgres:5432/bidai
+      - REDIS_URL=redis://:bidai_redis_pass@bidai-redis:6379/0
+    ports:
+      - "8006:8000"
+    volumes:
+      - ../../services/python/win-rate-service/app:/app/app:ro
+    networks:
+      - bidai-dev
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    profiles:
+      - python
+
+  # ----------------------------------------------------------
   # Milvus 2.4 Standalone — 向量数据库
   # ----------------------------------------------------------
   milvus-standalone:
