@@ -2,7 +2,6 @@
 # GitLab CI 基础流水线 — AI 智能投标系统
 # Story: S0-003
 # 目标：push 代码自动触发 CI，lint/test/build 三阶段可运行
-# 随着 Sprint 进展，各服务将逐步补充具体 job
 # ============================================================
 
 stages:
@@ -13,12 +12,161 @@ stages:
 variables:
   DOCKER_DRIVER: overlay2
   DOCKER_TLS_CERTDIR: ""
-  # 禁用交互式 git 提示
   GIT_DEPTH: 10
 
 # ----------------------------------------------------------
-# Lint 阶段：代码/配置格式与规范检查
+# Workflow 规则：控制 Pipeline 触发
 # ----------------------------------------------------------
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+# ==========================================================
+# 通用模板（隐藏 Job，以 . 开头）
+# ==========================================================
+
+# ---------- Python 服务模板 ----------
+.python-lint-template:
+  stage: lint
+  image: python:3.11-slim
+  before_script:
+    - pip install --no-cache-dir poetry==1.8.2
+    - cd services/python/${SERVICE_NAME}
+    - poetry config virtualenvs.in-project true
+    - poetry install --no-root
+  script:
+    - poetry run black --check app/ tests/
+    - poetry run ruff check app/ tests/
+    - poetry run mypy app/
+
+.python-test-template:
+  stage: test
+  image: python:3.11-slim
+  before_script:
+    - pip install --no-cache-dir poetry==1.8.2
+    - cd services/python/${SERVICE_NAME}
+    - poetry config virtualenvs.in-project true
+    - poetry install --no-root
+  script:
+    - poetry run pytest tests/ -v --cov=app --cov-report=term-missing
+  coverage: '/TOTAL.*\s+(\d+%)$/'
+
+.python-build-template:
+  stage: build
+  image: docker:24-cli
+  services:
+    - docker:24-dind
+  script:
+    - docker build -t bidai/${SERVICE_NAME}:ci-${CI_COMMIT_SHORT_SHA} .
+    - echo "✅ ${SERVICE_NAME} image built"
+
+# ---------- Java 服务占位模板 ----------
+.java-lint-template:
+  stage: lint
+  image: gradle:8-jdk21-alpine
+  script:
+    - |
+      if [ -d "services/java/${SERVICE_NAME}" ]; then
+        cd services/java/${SERVICE_NAME}
+        ./gradlew check --no-daemon
+      else
+        echo "⚠️ services/java/${SERVICE_NAME} not ready yet (S0-005), skipping lint"
+      fi
+
+.java-test-template:
+  stage: test
+  image: gradle:8-jdk21-alpine
+  script:
+    - |
+      if [ -d "services/java/${SERVICE_NAME}" ]; then
+        cd services/java/${SERVICE_NAME}
+        ./gradlew test --no-daemon
+      else
+        echo "⚠️ services/java/${SERVICE_NAME} not ready yet (S0-005), skipping test"
+      fi
+
+.java-build-template:
+  stage: build
+  image: docker:24-cli
+  services:
+    - docker:24-dind
+  script:
+    - |
+      if [ -d "services/java/${SERVICE_NAME}" ]; then
+        cd services/java/${SERVICE_NAME}
+        docker build -t bidai/${SERVICE_NAME}:ci-${CI_COMMIT_SHORT_SHA} .
+        echo "✅ ${SERVICE_NAME} image built"
+      else
+        echo "⚠️ services/java/${SERVICE_NAME} not ready yet (S0-005), skipping build"
+      fi
+
+# ---------- 前端占位模板 ----------
+.frontend-lint-template:
+  stage: lint
+  image: node:20-alpine
+  script:
+    - |
+      if [ -d "frontend/${PROJECT_NAME}" ]; then
+        cd frontend/${PROJECT_NAME}
+        if [ -f "pnpm-lock.yaml" ]; then
+          npm install -g pnpm
+          pnpm install --frozen-lockfile
+          pnpm type-check
+          pnpm lint
+        else
+          npm ci
+          npm run type-check
+          npm run lint
+        fi
+      else
+        echo "⚠️ frontend/${PROJECT_NAME} not ready yet (S0-006), skipping lint"
+      fi
+
+.frontend-test-template:
+  stage: test
+  image: node:20-alpine
+  script:
+    - |
+      if [ -d "frontend/${PROJECT_NAME}" ]; then
+        cd frontend/${PROJECT_NAME}
+        if [ -f "pnpm-lock.yaml" ]; then
+          npm install -g pnpm
+          pnpm install --frozen-lockfile
+          pnpm type-check
+        else
+          npm ci
+          npm run type-check
+        fi
+      else
+        echo "⚠️ frontend/${PROJECT_NAME} not ready yet (S0-006), skipping test"
+      fi
+
+.frontend-build-template:
+  stage: build
+  image: node:20-alpine
+  script:
+    - |
+      if [ -d "frontend/${PROJECT_NAME}" ]; then
+        cd frontend/${PROJECT_NAME}
+        if [ -f "pnpm-lock.yaml" ]; then
+          npm install -g pnpm
+          pnpm install --frozen-lockfile
+          pnpm build
+        else
+          npm ci
+          npm run build
+        fi
+        echo "✅ ${PROJECT_NAME} built"
+      else
+        echo "⚠️ frontend/${PROJECT_NAME} not ready yet (S0-006), skipping build"
+      fi
+
+# ==========================================================
+# Lint 阶段
+# ==========================================================
+
 lint:commit-msg:
   stage: lint
   image: alpine:latest
@@ -50,6 +198,60 @@ lint:docker-compose:
         - infra/docker/*.yml
         - infra/docker/**/*.yml
 
+lint:k8s-manifests:
+  stage: lint
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache python3 py3-yaml
+  script:
+    - |
+      echo "Validating K8s YAML manifests..."
+      find infra/k8s -name '*.yaml' | while read f; do
+        python3 -c "import yaml; list(yaml.safe_load_all(open('$f')))" || { echo "❌ Invalid YAML: $f"; exit 1; }
+      done
+      echo "✅ All K8s manifests are valid YAML"
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - infra/k8s/**
+        - infra/nginx/**
+
+test:db-migration:
+  stage: test
+  image: python:3.11-slim
+  services:
+    - postgres:15-alpine
+  variables:
+    POSTGRES_DB: bidai_test
+    POSTGRES_USER: bidai
+    POSTGRES_PASSWORD: bidai_test_pass
+    DATABASE_URL: postgresql+psycopg2://bidai:bidai_test_pass@postgres:5432/bidai_test
+  before_script:
+    - pip install --no-cache-dir alembic psycopg2-binary sqlparse
+    - |
+      echo "Waiting for PostgreSQL..."
+      for i in $(seq 1 30); do
+        pg_isready -h postgres -p 5432 -U bidai && break
+        sleep 1
+      done
+  script:
+    - |
+      cd infra/db
+      export SQLALCHEMY_URL="$DATABASE_URL"
+      sed -i "s|sqlalchemy.url = .*|sqlalchemy.url = $DATABASE_URL|" alembic.ini
+      alembic upgrade head
+      echo "✅ Alembic migration applied successfully"
+      # Verify schema count
+      schema_count=$(psql "$DATABASE_URL" -t -c "SELECT COUNT(*) FROM information_schema.schemata WHERE schema_name IN ('auth','project','knowledge','bid','ai_task','audit');")
+      echo "Schema count: $schema_count"
+      test "$schema_count" -eq 6 || exit 1
+      echo "✅ All 6 schemas created"
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - infra/db/**
+        - docs/database-design.md
+
 lint:docs:
   stage: lint
   image: alpine:latest
@@ -68,31 +270,269 @@ lint:docs:
         - docs/**
         - CLAUDE.md
 
-# ----------------------------------------------------------
-# Test 阶段：结构/逻辑验证（随着服务脚手架完善将逐步扩充）
-# ----------------------------------------------------------
+# ---------- Python 服务 Lint ----------
+lint:bid-parser-service:
+  extends: .python-lint-template
+  variables:
+    SERVICE_NAME: bid-parser-service
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - services/python/bid-parser-service/**
+
+lint:bid-writer-service:
+  extends: .python-lint-template
+  variables:
+    SERVICE_NAME: bid-writer-service
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - services/python/bid-writer-service/**
+
+lint:bid-review-service:
+  extends: .python-lint-template
+  variables:
+    SERVICE_NAME: bid-review-service
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - services/python/bid-review-service/**
+
+lint:collusion-analysis-service:
+  extends: .python-lint-template
+  variables:
+    SERVICE_NAME: collusion-analysis-service
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - services/python/collusion-analysis-service/**
+
+lint:knowledge-service:
+  extends: .python-lint-template
+  variables:
+    SERVICE_NAME: knowledge-service
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - services/python/knowledge-service/**
+
+lint:win-rate-service:
+  extends: .python-lint-template
+  variables:
+    SERVICE_NAME: win-rate-service
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - services/python/win-rate-service/**
+
+# ---------- Java 服务 Lint（占位）----------
+lint:auth-service:
+  extends: .java-lint-template
+  variables:
+    SERVICE_NAME: auth-service
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - services/java/auth-service/**
+
+lint:project-service:
+  extends: .java-lint-template
+  variables:
+    SERVICE_NAME: project-service
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - services/java/project-service/**
+
+lint:export-service:
+  extends: .java-lint-template
+  variables:
+    SERVICE_NAME: export-service
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - services/java/export-service/**
+
+lint:notify-service:
+  extends: .java-lint-template
+  variables:
+    SERVICE_NAME: notify-service
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - services/java/notify-service/**
+
+# ---------- 前端 Lint（占位）----------
+lint:bid-web:
+  extends: .frontend-lint-template
+  variables:
+    PROJECT_NAME: bid-web
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - frontend/bid-web/**
+
+lint:bid-mobile:
+  extends: .frontend-lint-template
+  variables:
+    PROJECT_NAME: bid-mobile
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - frontend/bid-mobile/**
+
+# ==========================================================
+# Test 阶段
+# ==========================================================
+
 test:project-structure:
   stage: test
   image: alpine:latest
   script:
     - |
       echo "Validating project structure per CLAUDE.md..."
-      # 核心规范文件
       test -f CLAUDE.md || exit 1
       test -f .gitignore || exit 1
-      # 基础设施目录
       test -d infra/docker || exit 1
+      test -d infra/k8s || exit 1
+      test -d infra/db || exit 1
       test -d docs || exit 1
-      # Git 规范工具
       test -f .gitmessage || exit 1
       test -d .githooks || exit 1
+      # Python 服务必须存在
+      test -d services/python/bid-parser-service || exit 1
+      test -d services/python/bid-writer-service || exit 1
+      test -d services/python/bid-review-service || exit 1
+      test -d services/python/collusion-analysis-service || exit 1
+      test -d services/python/knowledge-service || exit 1
+      test -d services/python/win-rate-service || exit 1
+      # Java 服务必须存在
+      test -d services/java/auth-service || exit 1
+      test -d services/java/project-service || exit 1
+      test -d services/java/export-service || exit 1
+      test -d services/java/notify-service || exit 1
+      # 前端必须存在
+      test -d frontend/bid-web || exit 1
       echo "✅ Project structure validation passed"
   rules:
     - if: '$CI_PIPELINE_SOURCE == "push"'
 
-# ----------------------------------------------------------
-# Build 阶段：Docker 镜像构建（当前仅 ES 镜像，后续扩展）
-# ----------------------------------------------------------
+# ---------- Python 服务 Test ----------
+test:bid-parser-service:
+  extends: .python-test-template
+  variables:
+    SERVICE_NAME: bid-parser-service
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - services/python/bid-parser-service/**
+
+test:bid-writer-service:
+  extends: .python-test-template
+  variables:
+    SERVICE_NAME: bid-writer-service
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - services/python/bid-writer-service/**
+
+test:bid-review-service:
+  extends: .python-test-template
+  variables:
+    SERVICE_NAME: bid-review-service
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - services/python/bid-review-service/**
+
+test:collusion-analysis-service:
+  extends: .python-test-template
+  variables:
+    SERVICE_NAME: collusion-analysis-service
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - services/python/collusion-analysis-service/**
+
+test:knowledge-service:
+  extends: .python-test-template
+  variables:
+    SERVICE_NAME: knowledge-service
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - services/python/knowledge-service/**
+
+test:win-rate-service:
+  extends: .python-test-template
+  variables:
+    SERVICE_NAME: win-rate-service
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - services/python/win-rate-service/**
+
+# ---------- Java 服务 Test（占位）----------
+test:auth-service:
+  extends: .java-test-template
+  variables:
+    SERVICE_NAME: auth-service
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - services/java/auth-service/**
+
+test:project-service:
+  extends: .java-test-template
+  variables:
+    SERVICE_NAME: project-service
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - services/java/project-service/**
+
+test:export-service:
+  extends: .java-test-template
+  variables:
+    SERVICE_NAME: export-service
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - services/java/export-service/**
+
+test:notify-service:
+  extends: .java-test-template
+  variables:
+    SERVICE_NAME: notify-service
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - services/java/notify-service/**
+
+# ---------- 前端 Test（占位）----------
+test:bid-web:
+  extends: .frontend-test-template
+  variables:
+    PROJECT_NAME: bid-web
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - frontend/bid-web/**
+
+test:bid-mobile:
+  extends: .frontend-test-template
+  variables:
+    PROJECT_NAME: bid-mobile
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - frontend/bid-mobile/**
+
+# ==========================================================
+# Build 阶段
+# ==========================================================
+
+# ---------- 通用 Build ----------
 build:elasticsearch:
   stage: build
   image: docker:24-cli
@@ -102,7 +542,7 @@ build:elasticsearch:
     - |
       echo "Building Elasticsearch + IK image..."
       cd infra/docker/elasticsearch
-      docker build -t bidai/elasticsearch:ci-$CI_COMMIT_SHORT_SHA .
+      docker build -t bidai/elasticsearch:ci-${CI_COMMIT_SHORT_SHA} .
       echo "✅ Elasticsearch image built"
   rules:
     - if: '$CI_PIPELINE_SOURCE == "push"'
@@ -122,5 +562,114 @@ build:gitlab-infra:
       echo "✅ GitLab infra config valid"
   rules:
     - if: '$CI_PIPELINE_SOURCE == "push"'
-# Restarted at Fri May  1 05:47:07 PM CST 2026
-# network fix at Fri May  1 05:48:00 PM CST 2026
+
+# ---------- Python 服务 Build ----------
+build:bid-parser-service:
+  extends: .python-build-template
+  variables:
+    SERVICE_NAME: bid-parser-service
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - services/python/bid-parser-service/**
+
+build:bid-writer-service:
+  extends: .python-build-template
+  variables:
+    SERVICE_NAME: bid-writer-service
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - services/python/bid-writer-service/**
+
+build:bid-review-service:
+  extends: .python-build-template
+  variables:
+    SERVICE_NAME: bid-review-service
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - services/python/bid-review-service/**
+
+build:collusion-analysis-service:
+  extends: .python-build-template
+  variables:
+    SERVICE_NAME: collusion-analysis-service
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - services/python/collusion-analysis-service/**
+
+build:knowledge-service:
+  extends: .python-build-template
+  variables:
+    SERVICE_NAME: knowledge-service
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - services/python/knowledge-service/**
+
+build:win-rate-service:
+  extends: .python-build-template
+  variables:
+    SERVICE_NAME: win-rate-service
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - services/python/win-rate-service/**
+
+# ---------- Java 服务 Build（占位）----------
+build:auth-service:
+  extends: .java-build-template
+  variables:
+    SERVICE_NAME: auth-service
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - services/java/auth-service/**
+
+build:project-service:
+  extends: .java-build-template
+  variables:
+    SERVICE_NAME: project-service
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - services/java/project-service/**
+
+build:export-service:
+  extends: .java-build-template
+  variables:
+    SERVICE_NAME: export-service
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - services/java/export-service/**
+
+build:notify-service:
+  extends: .java-build-template
+  variables:
+    SERVICE_NAME: notify-service
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - services/java/notify-service/**
+
+# ---------- 前端 Build（占位）----------
+build:bid-web:
+  extends: .frontend-build-template
+  variables:
+    PROJECT_NAME: bid-web
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - frontend/bid-web/**
+
+build:bid-mobile:
+  extends: .frontend-build-template
+  variables:
+    PROJECT_NAME: bid-mobile
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - frontend/bid-mobile/**

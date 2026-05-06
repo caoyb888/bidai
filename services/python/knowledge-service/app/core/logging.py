@@ -4,6 +4,7 @@
 
 import logging
 import sys
+
 from pythonjsonlogger import jsonlogger
 
 from app.core.config import settings

@@ -2,15 +2,15 @@
 # FastAPI 应用入口
 # ============================================================
 
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import AsyncIterator
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.v1.router import api_router
 from app.core.config import settings
 from app.core.logging import logger
-from app.api.v1.router import api_router
 
 
 @asynccontextmanager

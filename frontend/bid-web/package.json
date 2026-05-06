@@ -1,0 +1,36 @@
+{
+  "name": "bid-web",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview",
+    "type-check": "vue-tsc -b --noEmit",
+    "lint": "eslint src --ext .vue,.ts,.tsx --fix",
+    "format": "prettier --write \"src/**/*.{ts,tsx,vue,css,scss}\""
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "^2.3.2",
+    "axios": "^1.16.0",
+    "element-plus": "^2.13.7",
+    "pinia": "^3.0.4",
+    "vue": "^3.5.33",
+    "vue-router": "^4.6.4"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^25.6.0",
+    "@vitejs/plugin-vue": "^5.1.4",
+    "eslint": "^10.3.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
+    "eslint-plugin-vue": "^10.9.0",
+    "prettier": "^3.8.3",
+    "typescript": "~5.6.2",
+    "typescript-eslint": "^8.59.1",
+    "vite": "^5.4.10",
+    "vue-tsc": "^2.1.8"
+  }
+}

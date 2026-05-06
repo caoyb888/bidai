@@ -87,7 +87,13 @@ htmlcov/
 *.crt
 .kube/
 
+# === K8s Secrets（真实密钥，严禁提交）===
+infra/k8s/base/02-secrets.yaml
+infra/k8s/**/secrets.yaml
+*.secret.yaml
+
 # === Misc ===
 *.tmp
 *.bak
 *.orig
+.gitlab-ci-local/

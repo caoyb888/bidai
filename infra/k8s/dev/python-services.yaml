@@ -1,0 +1,423 @@
+# ============================================================
+# Python AI 能力层服务 — 开发环境 Deployment + Service
+# 服务：bid-parser / bid-writer / bid-review / collusion-analysis / knowledge / win-rate
+# ============================================================
+
+# ---------- bid-parser-service ----------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bid-parser-service
+  namespace: bid-ai-dev
+  labels:
+    app: bid-parser-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bid-parser-service
+  template:
+    metadata:
+      labels:
+        app: bid-parser-service
+    spec:
+      containers:
+        - name: app
+          image: bidai/bid-parser-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+              name: http
+          envFrom:
+            - configMapRef:
+                name: bidai-shared-config
+            - secretRef:
+                name: bidai-shared-secrets
+          env:
+            - name: SERVICE_NAME
+              value: "bid-parser-service"
+            - name: OTEL_SERVICE_NAME
+              value: "bid-parser-service"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bid-parser-service
+  namespace: bid-ai-dev
+spec:
+  selector:
+    app: bid-parser-service
+  ports:
+    - port: 80
+      targetPort: 8000
+      name: http
+  type: ClusterIP
+
+---
+# ---------- bid-writer-service ----------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bid-writer-service
+  namespace: bid-ai-dev
+  labels:
+    app: bid-writer-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bid-writer-service
+  template:
+    metadata:
+      labels:
+        app: bid-writer-service
+    spec:
+      containers:
+        - name: app
+          image: bidai/bid-writer-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+              name: http
+          envFrom:
+            - configMapRef:
+                name: bidai-shared-config
+            - secretRef:
+                name: bidai-shared-secrets
+          env:
+            - name: SERVICE_NAME
+              value: "bid-writer-service"
+            - name: OTEL_SERVICE_NAME
+              value: "bid-writer-service"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bid-writer-service
+  namespace: bid-ai-dev
+spec:
+  selector:
+    app: bid-writer-service
+  ports:
+    - port: 80
+      targetPort: 8000
+      name: http
+  type: ClusterIP
+
+---
+# ---------- bid-review-service ----------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bid-review-service
+  namespace: bid-ai-dev
+  labels:
+    app: bid-review-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bid-review-service
+  template:
+    metadata:
+      labels:
+        app: bid-review-service
+    spec:
+      containers:
+        - name: app
+          image: bidai/bid-review-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+              name: http
+          envFrom:
+            - configMapRef:
+                name: bidai-shared-config
+            - secretRef:
+                name: bidai-shared-secrets
+          env:
+            - name: SERVICE_NAME
+              value: "bid-review-service"
+            - name: OTEL_SERVICE_NAME
+              value: "bid-review-service"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bid-review-service
+  namespace: bid-ai-dev
+spec:
+  selector:
+    app: bid-review-service
+  ports:
+    - port: 80
+      targetPort: 8000
+      name: http
+  type: ClusterIP
+
+---
+# ---------- collusion-analysis-service ----------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: collusion-analysis-service
+  namespace: bid-ai-dev
+  labels:
+    app: collusion-analysis-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: collusion-analysis-service
+  template:
+    metadata:
+      labels:
+        app: collusion-analysis-service
+    spec:
+      containers:
+        - name: app
+          image: bidai/collusion-analysis-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+              name: http
+          envFrom:
+            - configMapRef:
+                name: bidai-shared-config
+            - secretRef:
+                name: bidai-shared-secrets
+          env:
+            - name: SERVICE_NAME
+              value: "collusion-analysis-service"
+            - name: OTEL_SERVICE_NAME
+              value: "collusion-analysis-service"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: collusion-analysis-service
+  namespace: bid-ai-dev
+spec:
+  selector:
+    app: collusion-analysis-service
+  ports:
+    - port: 80
+      targetPort: 8000
+      name: http
+  type: ClusterIP
+
+---
+# ---------- knowledge-service ----------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: knowledge-service
+  namespace: bid-ai-dev
+  labels:
+    app: knowledge-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: knowledge-service
+  template:
+    metadata:
+      labels:
+        app: knowledge-service
+    spec:
+      containers:
+        - name: app
+          image: bidai/knowledge-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+              name: http
+          envFrom:
+            - configMapRef:
+                name: bidai-shared-config
+            - secretRef:
+                name: bidai-shared-secrets
+          env:
+            - name: SERVICE_NAME
+              value: "knowledge-service"
+            - name: OTEL_SERVICE_NAME
+              value: "knowledge-service"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: knowledge-service
+  namespace: bid-ai-dev
+spec:
+  selector:
+    app: knowledge-service
+  ports:
+    - port: 80
+      targetPort: 8000
+      name: http
+  type: ClusterIP
+
+---
+# ---------- win-rate-service ----------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: win-rate-service
+  namespace: bid-ai-dev
+  labels:
+    app: win-rate-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: win-rate-service
+  template:
+    metadata:
+      labels:
+        app: win-rate-service
+    spec:
+      containers:
+        - name: app
+          image: bidai/win-rate-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+              name: http
+          envFrom:
+            - configMapRef:
+                name: bidai-shared-config
+            - secretRef:
+                name: bidai-shared-secrets
+          env:
+            - name: SERVICE_NAME
+              value: "win-rate-service"
+            - name: OTEL_SERVICE_NAME
+              value: "win-rate-service"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: win-rate-service
+  namespace: bid-ai-dev
+spec:
+  selector:
+    app: win-rate-service
+  ports:
+    - port: 80
+      targetPort: 8000
+      name: http
+  type: ClusterIP

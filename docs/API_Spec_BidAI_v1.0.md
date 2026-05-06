@@ -747,7 +747,7 @@ components:
           type: string
         project_role:
           type: string
-          enum: [LEADER, MEMBER, REVIEWER]
+          enum: [LEADER, WRITER, REVIEWER, OBSERVER]
         joined_at:
           type: string
           format: date-time

@@ -1,0 +1,299 @@
+# ============================================================
+# Java 业务服务层 — 开发环境 Deployment + Service
+# 服务：auth / project / export / notify
+# ============================================================
+
+# ---------- auth-service ----------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-service
+  namespace: bid-ai-dev
+  labels:
+    app: auth-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth-service
+  template:
+    metadata:
+      labels:
+        app: auth-service
+    spec:
+      containers:
+        - name: app
+          image: bidai/auth-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8081
+              name: http
+          envFrom:
+            - configMapRef:
+                name: bidai-shared-config
+            - secretRef:
+                name: bidai-shared-secrets
+          env:
+            - name: SERVICE_NAME
+              value: "auth-service"
+            - name: OTEL_SERVICE_NAME
+              value: "auth-service"
+            - name: SERVER_PORT
+              value: "8081"
+            - name: SPRING_PROFILES_ACTIVE
+              value: "development"
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8081
+            initialDelaySeconds: 60
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8081
+            initialDelaySeconds: 30
+            periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+  namespace: bid-ai-dev
+spec:
+  selector:
+    app: auth-service
+  ports:
+    - port: 80
+      targetPort: 8081
+      name: http
+  type: ClusterIP
+
+---
+# ---------- project-service ----------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: project-service
+  namespace: bid-ai-dev
+  labels:
+    app: project-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: project-service
+  template:
+    metadata:
+      labels:
+        app: project-service
+    spec:
+      containers:
+        - name: app
+          image: bidai/project-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8082
+              name: http
+          envFrom:
+            - configMapRef:
+                name: bidai-shared-config
+            - secretRef:
+                name: bidai-shared-secrets
+          env:
+            - name: SERVICE_NAME
+              value: "project-service"
+            - name: OTEL_SERVICE_NAME
+              value: "project-service"
+            - name: SERVER_PORT
+              value: "8082"
+            - name: SPRING_PROFILES_ACTIVE
+              value: "development"
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8082
+            initialDelaySeconds: 60
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8082
+            initialDelaySeconds: 30
+            periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: project-service
+  namespace: bid-ai-dev
+spec:
+  selector:
+    app: project-service
+  ports:
+    - port: 80
+      targetPort: 8082
+      name: http
+  type: ClusterIP
+
+---
+# ---------- export-service ----------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: export-service
+  namespace: bid-ai-dev
+  labels:
+    app: export-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: export-service
+  template:
+    metadata:
+      labels:
+        app: export-service
+    spec:
+      containers:
+        - name: app
+          image: bidai/export-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8083
+              name: http
+          envFrom:
+            - configMapRef:
+                name: bidai-shared-config
+            - secretRef:
+                name: bidai-shared-secrets
+          env:
+            - name: SERVICE_NAME
+              value: "export-service"
+            - name: OTEL_SERVICE_NAME
+              value: "export-service"
+            - name: SERVER_PORT
+              value: "8083"
+            - name: SPRING_PROFILES_ACTIVE
+              value: "development"
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8083
+            initialDelaySeconds: 60
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8083
+            initialDelaySeconds: 30
+            periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: export-service
+  namespace: bid-ai-dev
+spec:
+  selector:
+    app: export-service
+  ports:
+    - port: 80
+      targetPort: 8083
+      name: http
+  type: ClusterIP
+
+---
+# ---------- notify-service ----------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notify-service
+  namespace: bid-ai-dev
+  labels:
+    app: notify-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notify-service
+  template:
+    metadata:
+      labels:
+        app: notify-service
+    spec:
+      containers:
+        - name: app
+          image: bidai/notify-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8084
+              name: http
+          envFrom:
+            - configMapRef:
+                name: bidai-shared-config
+            - secretRef:
+                name: bidai-shared-secrets
+          env:
+            - name: SERVICE_NAME
+              value: "notify-service"
+            - name: OTEL_SERVICE_NAME
+              value: "notify-service"
+            - name: SERVER_PORT
+              value: "8084"
+            - name: SPRING_PROFILES_ACTIVE
+              value: "development"
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8084
+            initialDelaySeconds: 60
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8084
+            initialDelaySeconds: 30
+            periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notify-service
+  namespace: bid-ai-dev
+spec:
+  selector:
+    app: notify-service
+  ports:
+    - port: 80
+      targetPort: 8084
+      name: http
+  type: ClusterIP

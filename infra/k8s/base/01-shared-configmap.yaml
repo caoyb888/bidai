@@ -1,0 +1,71 @@
+# ============================================================
+# 开发环境共享 ConfigMap
+# 只包含非敏感配置。敏感配置见 02-secrets-template.yaml（K8s Secret）
+# ============================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bidai-shared-config
+  namespace: bid-ai-dev
+  labels:
+    app: bidai-shared
+data:
+  # 应用基础
+  APP_ENV: "development"
+  LOG_LEVEL: "INFO"
+
+  # 数据库（不含密码，密码通过 Secret 注入）
+  DATABASE_HOST: "pg-primary.bid-ai-dev.svc.cluster.local"
+  DATABASE_PORT: "5432"
+  DATABASE_NAME: "bidai"
+  DATABASE_USER: "bidai"
+  DATABASE_POOL_SIZE: "10"
+  DATABASE_MAX_OVERFLOW: "5"
+
+  # Redis
+  REDIS_HOST: "redis-cluster.bid-ai-dev.svc.cluster.local"
+  REDIS_PORT: "6379"
+  REDIS_DB: "0"
+  REDIS_POOL_SIZE: "10"
+
+  # Elasticsearch
+  ES_URL: "http://es-cluster.bid-ai-dev.svc.cluster.local:9200"
+  ES_INDEX_PREFIX: "bidai_dev"
+
+  # Milvus
+  MILVUS_HOST: "milvus-cluster.bid-ai-dev.svc.cluster.local"
+  MILVUS_PORT: "19530"
+  MILVUS_COLLECTION: "bid_chunks_dev"
+
+  # MinIO（不含密钥）
+  MINIO_ENDPOINT: "minio-cluster.bid-ai-dev.svc.cluster.local:9000"
+  MINIO_SECURE: "false"
+
+  # LLM 私有模型
+  LLM_PRIVATE_BASE_URL: "http://gpu-node-1.bid-ai-dev.svc.cluster.local:8080/v1"
+  LLM_PRIVATE_MODEL: "qwen2.5-72b-instruct"
+  LLM_PRIVATE_TIMEOUT: "120"
+  LLM_PRIVATE_MAX_RETRIES: "3"
+
+  # LLM 外部 API（降级用，不含 API Key）
+  LLM_EXTERNAL_MODEL: "gpt-4o"
+  LLM_EXTERNAL_TIMEOUT: "60"
+
+  # Embedding
+  EMBEDDING_MODEL: "text-embedding-3-large"
+  EMBEDDING_DIMENSIONS: "1536"
+
+  # Celery
+  CELERY_BROKER_URL: "redis://redis-cluster.bid-ai-dev.svc.cluster.local:6379/1"
+  CELERY_RESULT_BACKEND: "redis://redis-cluster.bid-ai-dev.svc.cluster.local:6379/2"
+  CELERY_TASK_TIMEOUT: "300"
+
+  # 安全（非敏感部分）
+  JWT_ALGORITHM: "HS256"
+  JWT_EXPIRE_HOURS: "8"
+  REFRESH_TOKEN_EXPIRE_DAYS: "30"
+  MFA_ISSUER: "BidAI"
+
+  # 链路追踪
+  JAEGER_AGENT_HOST: "jaeger-agent.bid-ai-dev.svc.cluster.local"
+  JAEGER_AGENT_PORT: "6831"

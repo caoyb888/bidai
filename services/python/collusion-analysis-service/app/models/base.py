@@ -4,7 +4,6 @@
 # ============================================================
 
 import uuid
-from datetime import datetime
 
 from sqlalchemy import Column, DateTime, String, func
 from sqlalchemy.dialects.postgresql import UUID

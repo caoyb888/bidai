@@ -1,0 +1,13 @@
+# ============================================================
+# K8s 开发命名空间
+# Story: S0-007
+# 环境：development
+# ============================================================
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: bid-ai-dev
+  labels:
+    name: bid-ai-dev
+    environment: development
+    managed-by: ops

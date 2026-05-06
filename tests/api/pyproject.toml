@@ -1,0 +1,20 @@
+[project]
+name = "bidai-api-tests"
+version = "0.1.0"
+description = "AI 智能投标系统 — API 端到端测试（pytest + httpx）"
+requires-python = ">=3.11"
+dependencies = [
+    "httpx>=0.27",
+    "pytest>=7.4",
+    "pytest-asyncio>=0.23",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["."]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = "-v --tb=short"
+
+[tool.ruff]
+line-length = 120

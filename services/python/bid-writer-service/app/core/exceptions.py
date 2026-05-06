@@ -16,11 +16,14 @@ class BaseServiceException(HTTPException):
         status_code: int = status.HTTP_400_BAD_REQUEST,
     ) -> None:
         self.biz_code = code
-        super().__init__(status_code=status_code, detail={
-            "code": code,
-            "message": message,
-            "detail": detail,
-        })
+        super().__init__(
+            status_code=status_code,
+            detail={
+                "code": code,
+                "message": message,
+                "detail": detail,
+            },
+        )
 
 
 class NotFoundError(BaseServiceException):
