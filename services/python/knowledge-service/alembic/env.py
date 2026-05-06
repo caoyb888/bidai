@@ -6,9 +6,11 @@ from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
+# 导入所有模型以确保它们注册到 Base.metadata
+import app.models  # noqa: F401
 from alembic import context
-from app.db import Base
 from app.core.config import settings
+from app.db import Base
 
 config = context.config
 if config.config_file_name is not None:

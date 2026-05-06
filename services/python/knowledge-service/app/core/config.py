@@ -38,5 +38,16 @@ class Settings(BaseSettings):
     llm_private_model: str = ""
     llm_private_timeout: int = 120
 
+    # MinIO（对象存储）
+    minio_endpoint: str = "localhost:9000"
+    minio_access_key: str = "minioadmin"
+    minio_secret_key: str = "minioadmin"
+    minio_secure: bool = False
+    minio_kb_bucket: str = "kb-documents"
+
+    # 文件上传限制
+    upload_max_size_mb: int = 100
+    upload_allowed_extensions: set[str] = {"pdf", "docx", "xlsx", "jpg", "png"}
+
 
 settings = Settings()

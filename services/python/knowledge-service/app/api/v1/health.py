@@ -10,6 +10,6 @@ from app.schemas.base import CommonResponse
 router = APIRouter()
 
 
-@router.get("/health", status_code=status.HTTP_200_OK, response_model=CommonResponse)
-async def health_check() -> CommonResponse:
-    return CommonResponse(code=200, message="healthy", data={"service": "knowledge-service"})
+@router.get("/health", status_code=status.HTTP_200_OK, response_model=CommonResponse[dict[str, str]])
+async def health_check() -> CommonResponse[dict[str, str]]:
+    return CommonResponse[dict[str, str]](code=200, message="healthy", data={"service": "knowledge-service"})

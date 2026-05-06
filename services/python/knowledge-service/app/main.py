@@ -10,6 +10,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1.router import api_router
 from app.core.config import settings
+from app.core.exception_handlers import base_service_exception_handler
+from app.core.exceptions import BaseServiceException
 from app.core.logging import logger
 
 
@@ -36,5 +38,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.add_exception_handler(BaseServiceException, base_service_exception_handler)  # type: ignore[arg-type]
 
 app.include_router(api_router, prefix="/api/v1")

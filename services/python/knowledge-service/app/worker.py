@@ -11,7 +11,7 @@ celery_app = Celery(
     settings.app_name,
     broker=settings.redis_url,
     backend=settings.redis_url,
-    include=["app.ai.tasks"],  # AI 任务模块（后续 Sprint 填充）
+    include=["app.ai.tasks"],  # AI 任务模块
 )
 
 celery_app.conf.update(
