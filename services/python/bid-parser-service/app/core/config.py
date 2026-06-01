@@ -33,10 +33,20 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     jwt_expire_hours: int = 8
 
-    # LLM（降级配置占位）
+    # LLM（私有化模型）
     llm_private_base_url: str = ""
     llm_private_model: str = ""
     llm_private_timeout: int = 120
+
+    # LLM 外部 API — Kimi（Moonshot AI）降级备用
+    llm_kimi_api_key: str = ""
+    llm_kimi_model: str = "moonshot-v1-8k"
+    llm_kimi_timeout: int = 60
+
+    # LLM 外部 API — DeepSeek 降级备用
+    llm_deepseek_api_key: str = ""
+    llm_deepseek_model: str = "deepseek-chat"
+    llm_deepseek_timeout: int = 60
 
 
 settings = Settings()

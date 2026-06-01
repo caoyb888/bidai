@@ -20,6 +20,7 @@ RUN pip install --no-cache-dir poetry==1.8.2
 
 COPY pyproject.toml poetry.lock* ./
 RUN poetry install --without dev --no-root && rm -rf $POETRY_CACHE_DIR
+RUN /app/.venv/bin/pip install --no-cache-dir asyncpg
 
 # ------------------ Stage 2: Runtime ------------------
 FROM python:3.11-slim as runtime
