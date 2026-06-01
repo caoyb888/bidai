@@ -102,7 +102,7 @@ class ProjectControllerTest {
                                     "industry": "建筑",
                                     "region": "上海",
                                     "tenderDate": "2026-07-01",
-                                    "deadline": "2026-07-15T10:00:00Z"
+                                    "deadline": "2026-07-15T10:00:00"
                                 }
                                 """))
                 .andExpect(status().isCreated())

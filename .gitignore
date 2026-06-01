@@ -97,3 +97,4 @@ infra/k8s/**/secrets.yaml
 *.bak
 *.orig
 .gitlab-ci-local/
+.kimi/

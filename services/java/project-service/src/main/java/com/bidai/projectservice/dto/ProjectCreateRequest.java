@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public record ProjectCreateRequest(
         @NotBlank(message = "项目名称不能为空")
@@ -31,6 +32,6 @@ public record ProjectCreateRequest(
         String description,
 
         @NotNull(message = "递交截止时间不能为空")
-        java.time.Instant deadline
+        LocalDateTime deadline
 ) {
 }

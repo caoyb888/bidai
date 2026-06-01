@@ -20,8 +20,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -65,7 +65,7 @@ class ProjectServiceTest {
     void createProject_shouldSucceed_whenNoConflict() {
         ProjectCreateRequest request = new ProjectCreateRequest(
                 "测试项目", "测试客户", "IT", "北京",
-                LocalDate.of(2026, 6, 15), "5000000", null, null, Instant.now().plusSeconds(86400)
+                LocalDate.of(2026, 6, 15), "5000000", null, null, LocalDateTime.of(2026, 6, 15, 10, 0)
         );
 
         when(projectRepository.existsByProjectNameAndClientNameAndDeletedAtIsNull("测试项目", "测试客户"))
@@ -93,7 +93,7 @@ class ProjectServiceTest {
     void createProject_shouldThrow_whenDuplicateNameAndClient() {
         ProjectCreateRequest request = new ProjectCreateRequest(
                 "测试项目", "测试客户", "IT", "北京",
-                LocalDate.of(2026, 6, 15), null, null, null, Instant.now()
+                LocalDate.of(2026, 6, 15), null, null, null, LocalDateTime.of(2026, 6, 15, 10, 0)
         );
 
         when(projectRepository.existsByProjectNameAndClientNameAndDeletedAtIsNull("测试项目", "测试客户"))

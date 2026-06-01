@@ -8,14 +8,17 @@ import type {
   ProjectDetail,
   ProjectStatus,
 } from '@/types/project'
+import { PROJECT_REGIONS, PROJECT_INDUSTRIES } from '@/types/project'
 
 interface Props {
   visible: boolean
   project?: ProjectDetail | null
+  readonly?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   project: null,
+  readonly: false,
 })
 
 const emit = defineEmits<{
@@ -27,7 +30,10 @@ const formRef = ref<FormInstance | null>(null)
 const loading = ref(false)
 
 const isEdit = computed(() => !!props.project)
-const dialogTitle = computed(() => (isEdit.value ? '编辑项目' : '创建项目'))
+const isReadonly = computed(() => props.readonly)
+const dialogTitle = computed(() =>
+  isReadonly.value ? '查看项目' : isEdit.value ? '编辑项目' : '创建项目'
+)
 
 const form = reactive<ProjectCreateRequest & { status?: ProjectStatus }>({
   name: '',
@@ -53,8 +59,34 @@ const rules: FormRules = {
   ],
   industry: [{ max: 64, message: '行业分类不超过64字符', trigger: 'blur' }],
   region: [{ max: 64, message: '地区不超过64字符', trigger: 'blur' }],
-  tenderDate: [{ required: true, message: '请选择开标日期', trigger: 'change' }],
-  deadline: [{ required: true, message: '请选择递交截止时间', trigger: 'change' }],
+  tenderDate: [
+    { required: true, message: '请选择开标日期', trigger: 'change' },
+    {
+      validator: (_rule: any, value: string, callback: (error?: Error) => void) => {
+        if (value && form.deadline) {
+          if (form.deadline.substring(0, 10) > value) {
+            callback(new Error('开标日期不能早于投标截止时间'))
+          }
+        }
+        callback()
+      },
+      trigger: 'change',
+    },
+  ],
+  deadline: [
+    { required: true, message: '请选择递交截止时间', trigger: 'change' },
+    {
+      validator: (_rule: any, value: string, callback: (error?: Error) => void) => {
+        if (value && form.tenderDate) {
+          if (value.substring(0, 10) > form.tenderDate) {
+            callback(new Error('投标截止时间不能晚于开标日期'))
+          }
+        }
+        callback()
+      },
+      trigger: 'change',
+    },
+  ],
   budgetAmount: [{ pattern: /^\d+(\.\d{1,2})?$/, message: '金额格式不正确', trigger: 'blur' }],
   tenderAgency: [{ max: 256, message: '招标代理机构不超过256字符', trigger: 'blur' }],
 }
@@ -164,22 +196,50 @@ async function handleSubmit(): Promise<void> {
   >
     <el-form ref="formRef" :model="form" :rules="rules" label-width="120px" class="project-form">
       <el-form-item label="项目名称" prop="name">
-        <el-input v-model="form.name" placeholder="请输入项目名称" />
+        <el-input v-model="form.name" placeholder="请输入项目名称" :disabled="isReadonly" />
       </el-form-item>
 
       <el-form-item label="客户名称" prop="client">
-        <el-input v-model="form.client" placeholder="请输入客户名称" />
+        <el-input v-model="form.client" placeholder="请输入客户名称" :disabled="isReadonly" />
       </el-form-item>
 
       <el-row :gutter="20">
         <el-col :span="12">
           <el-form-item label="行业分类" prop="industry">
-            <el-input v-model="form.industry" placeholder="如：政务信息化" />
+            <el-select
+              v-model="form.industry"
+              placeholder="选择行业"
+              style="width: 100%"
+              clearable
+              filterable
+              :disabled="isReadonly"
+            >
+              <el-option
+                v-for="industry in PROJECT_INDUSTRIES"
+                :key="industry"
+                :label="industry"
+                :value="industry"
+              />
+            </el-select>
           </el-form-item>
         </el-col>
         <el-col :span="12">
           <el-form-item label="地区" prop="region">
-            <el-input v-model="form.region" placeholder="如：北京市" />
+            <el-select
+              v-model="form.region"
+              placeholder="选择地区"
+              style="width: 100%"
+              clearable
+              filterable
+              :disabled="isReadonly"
+            >
+              <el-option
+                v-for="region in PROJECT_REGIONS"
+                :key="region"
+                :label="region"
+                :value="region"
+              />
+            </el-select>
           </el-form-item>
         </el-col>
       </el-row>
@@ -193,6 +253,8 @@ async function handleSubmit(): Promise<void> {
               placeholder="选择开标日期"
               style="width: 100%"
               value-format="YYYY-MM-DD"
+              :disabled="isReadonly"
+              @change="() => formRef?.validateField('deadline')"
             />
           </el-form-item>
         </el-col>
@@ -204,6 +266,7 @@ async function handleSubmit(): Promise<void> {
               placeholder="选择递交截止时间"
               style="width: 100%"
               value-format="YYYY-MM-DDTHH:mm:ss"
+              :disabled="isReadonly"
             />
           </el-form-item>
         </el-col>
@@ -212,20 +275,20 @@ async function handleSubmit(): Promise<void> {
       <el-row :gutter="20">
         <el-col :span="12">
           <el-form-item label="预算金额" prop="budgetAmount">
-            <el-input v-model="form.budgetAmount" placeholder="单位：元">
+            <el-input v-model="form.budgetAmount" placeholder="单位：元" :disabled="isReadonly">
               <template #append>元</template>
             </el-input>
           </el-form-item>
         </el-col>
         <el-col :span="12">
           <el-form-item label="招标代理" prop="tenderAgency">
-            <el-input v-model="form.tenderAgency" placeholder="招标代理机构" />
+            <el-input v-model="form.tenderAgency" placeholder="招标代理机构" :disabled="isReadonly" />
           </el-form-item>
         </el-col>
       </el-row>
 
       <el-form-item v-if="isEdit" label="项目状态" prop="status">
-        <el-select v-model="form.status" placeholder="选择状态" style="width: 100%">
+        <el-select v-model="form.status" placeholder="选择状态" style="width: 100%" :disabled="isReadonly">
           <el-option label="草稿" value="DRAFT" />
           <el-option label="进行中" value="IN_PROGRESS" />
           <el-option label="审核中" value="REVIEWING" />
@@ -243,15 +306,17 @@ async function handleSubmit(): Promise<void> {
           type="textarea"
           :rows="3"
           placeholder="请输入项目描述"
+          :disabled="isReadonly"
         />
       </el-form-item>
     </el-form>
 
     <template #footer>
-      <el-button @click="handleClose">取消</el-button>
-      <el-button type="primary" :loading="loading" @click="handleSubmit">
+      <el-button v-if="!isReadonly" @click="handleClose">取消</el-button>
+      <el-button v-if="!isReadonly" type="primary" :loading="loading" @click="handleSubmit">
         {{ isEdit ? '保存' : '创建' }}
       </el-button>
+      <el-button v-if="isReadonly" @click="handleClose">关闭</el-button>
     </template>
   </el-dialog>
 </template>

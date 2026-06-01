@@ -29,6 +29,7 @@ const queryParams = reactive<ProjectListParams>({
 /** 弹窗状态 */
 const dialogVisible = ref(false)
 const editingProject = ref<ProjectDetail | null>(null)
+const viewMode = ref(false)
 
 /** 获取列表 */
 async function fetchProjects(): Promise<void> {
@@ -79,6 +80,7 @@ function handleSizeChange(size: number): void {
 
 /** 打开创建弹窗 */
 function handleCreate(): void {
+  viewMode.value = false
   editingProject.value = null
   dialogVisible.value = true
 }
@@ -86,6 +88,23 @@ function handleCreate(): void {
 /** 打开编辑弹窗 */
 async function handleEdit(row: ProjectBrief): Promise<void> {
   try {
+    viewMode.value = false
+    loading.value = true
+    const detail = await projectService.getProject(row.id)
+    editingProject.value = detail
+    dialogVisible.value = true
+  } catch (err) {
+    const error = err as Error
+    ElMessage.error(error.message || '获取项目详情失败')
+  } finally {
+    loading.value = false
+  }
+}
+
+/** 打开查看弹窗 */
+async function handleView(row: ProjectBrief): Promise<void> {
+  try {
+    viewMode.value = true
     loading.value = true
     const detail = await projectService.getProject(row.id)
     editingProject.value = detail
@@ -107,10 +126,13 @@ async function handleArchive(row: ProjectBrief): Promise<void> {
       { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' },
     )
     await projectService.deleteProject(row.id)
-    ElMessage.success('项目已归档')
-    fetchProjects()
-  } catch {
-    // 用户取消或已处理错误
+    ElMessage.success('归档成功')
+    row.status = 'ARCHIVED'
+    setTimeout(() => fetchProjects(), 800)
+  } catch (err) {
+    if (err !== 'cancel') {
+      ElMessage.error('归档失败，请稍后重试')
+    }
   }
 }
 
@@ -202,10 +224,13 @@ onMounted(() => {
         </el-table-column>
         <el-table-column label="操作" width="160" fixed="right">
           <template #default="{ row }">
+            <el-button link type="info" size="small" @click="handleView(row)">
+              查看
+            </el-button>
             <el-button v-if="canEdit" link type="primary" size="small" @click="handleEdit(row)">
               编辑
             </el-button>
-            <el-button v-if="canEdit" link type="danger" size="small" @click="handleArchive(row)">
+            <el-button v-if="canEdit && row.status !== 'ARCHIVED'" link type="danger" size="small" @click="handleArchive(row)">
               归档
             </el-button>
           </template>
@@ -226,10 +251,11 @@ onMounted(() => {
       </div>
     </el-card>
 
-    <!-- 创建/编辑弹窗 -->
+    <!-- 创建/编辑/查看弹窗 -->
     <ProjectFormDialog
       v-model:visible="dialogVisible"
       :project="editingProject"
+      :readonly="viewMode"
       @success="handleDialogSuccess"
     />
   </div>

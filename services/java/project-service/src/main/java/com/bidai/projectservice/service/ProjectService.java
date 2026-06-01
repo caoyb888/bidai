@@ -13,6 +13,7 @@ import com.bidai.projectservice.security.AuthContext;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -80,6 +81,10 @@ public class ProjectService {
             throw new BusinessException(40001, "同客户下已存在同名项目");
         }
 
+        if (request.deadline().toLocalDate().isAfter(request.tenderDate())) {
+            throw new BusinessException(30004, "投标截止时间不能晚于开标日期");
+        }
+
         String operator = getOperator();
 
         BidProject project = new BidProject();
@@ -89,7 +94,7 @@ public class ProjectService {
         project.setIndustry(request.industry() != null ? request.industry() : "");
         project.setRegion(request.region() != null ? request.region() : "");
         project.setTenderDate(request.tenderDate());
-        project.setDeadline(request.deadline());
+        project.setDeadline(request.deadline().atZone(ZoneId.systemDefault()).toInstant());
         project.setTenderAgency(request.tenderAgency());
         project.setDescription(request.description());
         project.setStatus(BidProject.EntityStatus.DRAFT);
@@ -179,11 +184,12 @@ public class ProjectService {
                 .orElseThrow(() -> new BusinessException(40002, "项目不存在或已删除"));
 
         project.setDeletedAt(Instant.now());
+        project.setStatus(BidProject.EntityStatus.ARCHIVED);
         String operator = getOperator();
         project.setUpdatedBy(operator);
         projectRepository.save(project);
 
-        log.info("Project deleted (soft): id={}, operator={}", projectId, operator);
+        log.info("Project archived: id={}, operator={}", projectId, operator);
     }
 
     @Transactional(readOnly = true)
