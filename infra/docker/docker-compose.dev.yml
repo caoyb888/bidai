@@ -202,6 +202,15 @@ services:
       - APP_ENV=development
       - DATABASE_URL=postgresql+asyncpg://bidai:bidai_dev_pass@bidai-postgres:5432/bidai
       - REDIS_URL=redis://:bidai_redis_pass@bidai-redis:6379/0
+      - LLM_PRIVATE_BASE_URL=${LLM_PRIVATE_BASE_URL:-}
+      - LLM_PRIVATE_MODEL=${LLM_PRIVATE_MODEL:-}
+      - LLM_PRIVATE_TIMEOUT=${LLM_PRIVATE_TIMEOUT:-120}
+      - LLM_KIMI_API_KEY=${LLM_KIMI_API_KEY:-}
+      - LLM_KIMI_MODEL=${LLM_KIMI_MODEL:-moonshot-v1-8k}
+      - LLM_KIMI_TIMEOUT=${LLM_KIMI_TIMEOUT:-60}
+      - LLM_DEEPSEEK_API_KEY=${LLM_DEEPSEEK_API_KEY:-}
+      - LLM_DEEPSEEK_MODEL=${LLM_DEEPSEEK_MODEL:-deepseek-chat}
+      - LLM_DEEPSEEK_TIMEOUT=${LLM_DEEPSEEK_TIMEOUT:-60}
     ports:
       - "8001:8000"
     volumes:
@@ -226,6 +235,15 @@ services:
       - APP_ENV=development
       - DATABASE_URL=postgresql+asyncpg://bidai:bidai_dev_pass@bidai-postgres:5432/bidai
       - REDIS_URL=redis://:bidai_redis_pass@bidai-redis:6379/0
+      - LLM_PRIVATE_BASE_URL=${LLM_PRIVATE_BASE_URL:-}
+      - LLM_PRIVATE_MODEL=${LLM_PRIVATE_MODEL:-}
+      - LLM_PRIVATE_TIMEOUT=${LLM_PRIVATE_TIMEOUT:-120}
+      - LLM_KIMI_API_KEY=${LLM_KIMI_API_KEY:-}
+      - LLM_KIMI_MODEL=${LLM_KIMI_MODEL:-moonshot-v1-8k}
+      - LLM_KIMI_TIMEOUT=${LLM_KIMI_TIMEOUT:-60}
+      - LLM_DEEPSEEK_API_KEY=${LLM_DEEPSEEK_API_KEY:-}
+      - LLM_DEEPSEEK_MODEL=${LLM_DEEPSEEK_MODEL:-deepseek-chat}
+      - LLM_DEEPSEEK_TIMEOUT=${LLM_DEEPSEEK_TIMEOUT:-60}
     ports:
       - "8002:8000"
     volumes:
@@ -250,6 +268,15 @@ services:
       - APP_ENV=development
       - DATABASE_URL=postgresql+asyncpg://bidai:bidai_dev_pass@bidai-postgres:5432/bidai
       - REDIS_URL=redis://:bidai_redis_pass@bidai-redis:6379/0
+      - LLM_PRIVATE_BASE_URL=${LLM_PRIVATE_BASE_URL:-}
+      - LLM_PRIVATE_MODEL=${LLM_PRIVATE_MODEL:-}
+      - LLM_PRIVATE_TIMEOUT=${LLM_PRIVATE_TIMEOUT:-120}
+      - LLM_KIMI_API_KEY=${LLM_KIMI_API_KEY:-}
+      - LLM_KIMI_MODEL=${LLM_KIMI_MODEL:-moonshot-v1-8k}
+      - LLM_KIMI_TIMEOUT=${LLM_KIMI_TIMEOUT:-60}
+      - LLM_DEEPSEEK_API_KEY=${LLM_DEEPSEEK_API_KEY:-}
+      - LLM_DEEPSEEK_MODEL=${LLM_DEEPSEEK_MODEL:-deepseek-chat}
+      - LLM_DEEPSEEK_TIMEOUT=${LLM_DEEPSEEK_TIMEOUT:-60}
     ports:
       - "8003:8000"
     volumes:
@@ -274,6 +301,15 @@ services:
       - APP_ENV=development
       - DATABASE_URL=postgresql+asyncpg://bidai:bidai_dev_pass@bidai-postgres:5432/bidai
       - REDIS_URL=redis://:bidai_redis_pass@bidai-redis:6379/0
+      - LLM_PRIVATE_BASE_URL=${LLM_PRIVATE_BASE_URL:-}
+      - LLM_PRIVATE_MODEL=${LLM_PRIVATE_MODEL:-}
+      - LLM_PRIVATE_TIMEOUT=${LLM_PRIVATE_TIMEOUT:-120}
+      - LLM_KIMI_API_KEY=${LLM_KIMI_API_KEY:-}
+      - LLM_KIMI_MODEL=${LLM_KIMI_MODEL:-moonshot-v1-8k}
+      - LLM_KIMI_TIMEOUT=${LLM_KIMI_TIMEOUT:-60}
+      - LLM_DEEPSEEK_API_KEY=${LLM_DEEPSEEK_API_KEY:-}
+      - LLM_DEEPSEEK_MODEL=${LLM_DEEPSEEK_MODEL:-deepseek-chat}
+      - LLM_DEEPSEEK_TIMEOUT=${LLM_DEEPSEEK_TIMEOUT:-60}
     ports:
       - "8004:8000"
     volumes:
@@ -298,6 +334,15 @@ services:
       - APP_ENV=development
       - DATABASE_URL=postgresql+asyncpg://bidai:bidai_dev_pass@bidai-postgres:5432/bidai
       - REDIS_URL=redis://:bidai_redis_pass@bidai-redis:6379/0
+      - LLM_PRIVATE_BASE_URL=${LLM_PRIVATE_BASE_URL:-}
+      - LLM_PRIVATE_MODEL=${LLM_PRIVATE_MODEL:-}
+      - LLM_PRIVATE_TIMEOUT=${LLM_PRIVATE_TIMEOUT:-120}
+      - LLM_KIMI_API_KEY=${LLM_KIMI_API_KEY:-}
+      - LLM_KIMI_MODEL=${LLM_KIMI_MODEL:-moonshot-v1-8k}
+      - LLM_KIMI_TIMEOUT=${LLM_KIMI_TIMEOUT:-60}
+      - LLM_DEEPSEEK_API_KEY=${LLM_DEEPSEEK_API_KEY:-}
+      - LLM_DEEPSEEK_MODEL=${LLM_DEEPSEEK_MODEL:-deepseek-chat}
+      - LLM_DEEPSEEK_TIMEOUT=${LLM_DEEPSEEK_TIMEOUT:-60}
     ports:
       - "8005:8000"
     volumes:
@@ -322,6 +367,15 @@ services:
       - APP_ENV=development
       - DATABASE_URL=postgresql+asyncpg://bidai:bidai_dev_pass@bidai-postgres:5432/bidai
       - REDIS_URL=redis://:bidai_redis_pass@bidai-redis:6379/0
+      - LLM_PRIVATE_BASE_URL=${LLM_PRIVATE_BASE_URL:-}
+      - LLM_PRIVATE_MODEL=${LLM_PRIVATE_MODEL:-}
+      - LLM_PRIVATE_TIMEOUT=${LLM_PRIVATE_TIMEOUT:-120}
+      - LLM_KIMI_API_KEY=${LLM_KIMI_API_KEY:-}
+      - LLM_KIMI_MODEL=${LLM_KIMI_MODEL:-moonshot-v1-8k}
+      - LLM_KIMI_TIMEOUT=${LLM_KIMI_TIMEOUT:-60}
+      - LLM_DEEPSEEK_API_KEY=${LLM_DEEPSEEK_API_KEY:-}
+      - LLM_DEEPSEEK_MODEL=${LLM_DEEPSEEK_MODEL:-deepseek-chat}
+      - LLM_DEEPSEEK_TIMEOUT=${LLM_DEEPSEEK_TIMEOUT:-60}
     ports:
       - "8006:8000"
     volumes:
