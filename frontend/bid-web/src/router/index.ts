@@ -6,6 +6,7 @@ import HomeView from '@/views/HomeView.vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 import ForbiddenView from '@/views/error/ForbiddenView.vue'
 import PlaceholderView from '@/views/PlaceholderView.vue'
+import KnowledgeView from '@/views/knowledge/KnowledgeView.vue'
 import ProjectListView from '@/views/project/ProjectListView.vue'
 
 const router = createRouter({
@@ -43,7 +44,7 @@ const router = createRouter({
         {
           path: 'knowledge',
           name: 'Knowledge',
-          component: PlaceholderView,
+          component: KnowledgeView,
           meta: { title: '知识库', permission: 'bid:edit' },
         },
         {

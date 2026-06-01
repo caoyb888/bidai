@@ -46,6 +46,31 @@ export type {
 } from './project'
 
 /* ============================================================
+ * 知识库相关类型（从子模块聚合导出，便于 api 层统一导入）
+ * ============================================================ */
+export type {
+  DocCategory,
+  IngestMode,
+  TaskStatus,
+  KnowledgeDocument,
+  KnowledgeListParams,
+  KnowledgeUploadResponse,
+  KnowledgeStatsResponse,
+  CategoryStat,
+  ExpiringSoonItem,
+  TaskDetail,
+  UploadProgressItem,
+} from './knowledge'
+
+export {
+  DOC_CATEGORY_LABELS,
+  DOC_CATEGORY_TYPES,
+  INGEST_MODE_LABELS,
+  TASK_STATUS_LABELS,
+  TASK_STATUS_TYPES,
+} from './knowledge'
+
+/* ============================================================
  * 路由元信息扩展（供 Vue Router 权限守卫使用）
  * ============================================================ */
 declare module 'vue-router' {

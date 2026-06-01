@@ -26,6 +26,14 @@ export default defineConfig({
         target: 'http://localhost:8082',
         changeOrigin: true,
       },
+      '/api/v1/knowledge': {
+        target: 'http://localhost:8005',
+        changeOrigin: true,
+      },
+      '/api/v1/tasks': {
+        target: 'http://localhost:8005',
+        changeOrigin: true,
+      },
     },
   },
 })
