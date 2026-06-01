@@ -7,6 +7,7 @@ from uuid import uuid4
 
 import pytest
 
+from app.ai.parsers.base import DocumentFragment
 from app.ai.parsers.factory import UnsupportedFileTypeError
 from app.ai.tasks import _mark_task_failed, _process_document
 from app.models.kb_document import KbDocument
@@ -36,7 +37,7 @@ class TestProcessDocument:
         mock_minio_cls: MagicMock,
         mock_doc: MagicMock,
     ) -> None:
-        """测试正常解析成功流程"""
+        """测试正常解析成功流程（含结构化片段 JSON 上传）"""
         # Mock MinIO
         mock_minio = MagicMock()
         mock_minio_cls.return_value = mock_minio
@@ -48,6 +49,10 @@ class TestProcessDocument:
         mock_result.page_count = 5
         mock_result.word_count = 1000
         mock_result.is_scanned = False
+        mock_result.fragments = [
+            DocumentFragment(content="段落1", page_no=1, fragment_type="TEXT"),
+            DocumentFragment(content="表格内容", page_no=1, fragment_type="TABLE"),
+        ]
         mock_parser.parse.return_value = mock_result
         mock_get_parser.return_value = mock_parser
 
@@ -72,10 +77,12 @@ class TestProcessDocument:
         assert result["word_count"] == 1000
         assert result["is_scanned"] is False
         assert result["parsed_text_path"] == "2026/05/doc123/doc123_parsed.txt"
+        assert result["fragments_path"] == "2026/05/doc123/doc123_fragments.json"
 
-        # 验证 MinIO 操作
-        mock_minio.download_file.assert_called_once()
-        mock_minio.upload_text.assert_called_once_with(
+        # 验证 MinIO 操作：上传解析文本 + 上传结构化片段 JSON
+        assert mock_minio.download_file.call_count == 1
+        assert mock_minio.upload_text.call_count == 2
+        mock_minio.upload_text.assert_any_call(
             "解析后的文本内容",
             "2026/05/doc123/doc123_parsed.txt",
         )
@@ -128,6 +135,7 @@ class TestProcessDocument:
         mock_result.page_count = 1
         mock_result.word_count = 10
         mock_result.is_scanned = False
+        mock_result.fragments = []
         mock_parser.parse.return_value = mock_result
         mock_get_parser.return_value = mock_parser
 

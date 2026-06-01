@@ -11,7 +11,11 @@ celery_app = Celery(
     settings.app_name,
     broker=settings.redis_url,
     backend=settings.redis_url,
-    include=["app.ai.tasks"],  # AI 任务模块
+    include=[
+        "app.ai.tasks",
+        "app.ai.vectorize_tasks",
+        "app.ai.sync_tasks",
+    ],
 )
 
 celery_app.conf.update(
@@ -24,4 +28,10 @@ celery_app.conf.update(
     task_time_limit=600,  # 10 分钟硬限制
     task_soft_time_limit=300,  # 5 分钟软限制
     worker_prefetch_multiplier=1,  # 公平调度，避免长任务阻塞
+    beat_schedule={
+        "es-index-compensate-every-5-minutes": {
+            "task": "app.ai.sync_tasks.es_index_compensate_task",
+            "schedule": 300.0,  # 5 分钟
+        },
+    },
 )

@@ -103,6 +103,18 @@ class MinioClient:
             raise StorageError(f"MinIO 文本上传失败: {exc}") from exc
         return object_path
 
+    def download_text(self, object_path: str) -> str:
+        """从 MinIO 下载文本内容"""
+
+        try:
+            response = self.client.get_object(self.bucket, object_path)
+            data = response.read()
+            response.close()
+            response.release_conn()
+            return data.decode("utf-8")
+        except S3Error as exc:
+            raise StorageError(f"MinIO 文本下载失败: {exc}") from exc
+
 
 def compute_sha256(file_data: BinaryIO) -> str:
     """计算文件 SHA-256 哈希（流式）"""

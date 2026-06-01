@@ -109,3 +109,14 @@ class StorageError(BaseServiceException):
             message=message,
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
+
+
+class SearchServiceError(BaseServiceException):
+    """检索服务异常（错误码 50005 / 50006）"""
+
+    def __init__(self, message: str = "检索服务暂时不可用", code: int = 50005) -> None:
+        super().__init__(
+            code=code,
+            message=message,
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+        )

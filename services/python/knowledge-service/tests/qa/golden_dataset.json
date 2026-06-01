@@ -1,0 +1,142 @@
+[
+  {
+    "query_id": "Q001",
+    "query": "公司有哪些信息系统集成相关的资质证书？",
+    "category": "QUALIFICATION",
+    "expected_doc_titles": ["系统集成", "资质", "CMMI", "ISO", "认证"],
+    "description": "查询信息系统集成类资质证书"
+  },
+  {
+    "query_id": "Q002",
+    "query": "查找安防工程企业资质的相关文件",
+    "category": "QUALIFICATION",
+    "expected_doc_titles": ["安防", "资质", "证书", "工程"],
+    "description": "安防工程资质查询"
+  },
+  {
+    "query_id": "Q003",
+    "query": "ISO9001 质量管理体系认证还在有效期内吗？",
+    "category": "QUALIFICATION",
+    "expected_doc_titles": ["ISO9001", "质量", "认证", "管理体系"],
+    "description": "查询 ISO 认证有效期"
+  },
+  {
+    "query_id": "Q004",
+    "query": "软件开发能力成熟度模型 CMMI 的等级证明",
+    "category": "QUALIFICATION",
+    "expected_doc_titles": ["CMMI", "成熟度", "软件", "开发"],
+    "description": "CMMI 等级资质"
+  },
+  {
+    "query_id": "Q005",
+    "query": "云计算服务相关的 ISO27001 信息安全认证",
+    "category": "QUALIFICATION",
+    "expected_doc_titles": ["ISO27001", "信息安全", "云计算", "认证"],
+    "description": "信息安全资质查询"
+  },
+  {
+    "query_id": "Q006",
+    "query": "近三年在广东省内的政务信息化项目业绩",
+    "category": "PERFORMANCE",
+    "expected_doc_titles": ["广东", "政务", "信息化", "业绩", "项目"],
+    "description": "广东省政务信息化业绩"
+  },
+  {
+    "query_id": "Q007",
+    "query": "查找智慧城市建设相关的成功案例",
+    "category": "PERFORMANCE",
+    "expected_doc_titles": ["智慧城市", "案例", "项目", "建设"],
+    "description": "智慧城市业绩查询"
+  },
+  {
+    "query_id": "Q008",
+    "query": "教育行业数字化转型的实施案例有哪些？",
+    "category": "PERFORMANCE",
+    "expected_doc_titles": ["教育", "数字化", "转型", "案例", "学校"],
+    "description": "教育行业业绩"
+  },
+  {
+    "query_id": "Q009",
+    "query": "医疗健康领域的大数据平台项目经验",
+    "category": "PERFORMANCE",
+    "expected_doc_titles": ["医疗", "健康", "大数据", "平台", "项目"],
+    "description": "医疗健康业绩"
+  },
+  {
+    "query_id": "Q010",
+    "query": "交通行业的智能调度系统建设业绩",
+    "category": "PERFORMANCE",
+    "expected_doc_titles": ["交通", "智能", "调度", "系统", "业绩"],
+    "description": "交通行业业绩"
+  },
+  {
+    "query_id": "Q011",
+    "query": "高级工程师张某某的简历和资格证书",
+    "category": "PERSONNEL",
+    "expected_doc_titles": ["高级", "工程师", "简历", "资格"],
+    "description": "人员简历查询"
+  },
+  {
+    "query_id": "Q012",
+    "query": "项目经理的 PMP 认证和软考高级证书",
+    "category": "PERSONNEL",
+    "expected_doc_titles": ["PMP", "项目经理", "软考", "高级"],
+    "description": "项目经理资质"
+  },
+  {
+    "query_id": "Q013",
+    "query": "网络安全专家的 CISP/CISSP 认证信息",
+    "category": "PERSONNEL",
+    "expected_doc_titles": ["CISP", "CISSP", "网络", "安全", "专家"],
+    "description": "安全人员认证"
+  },
+  {
+    "query_id": "Q014",
+    "query": "具有云计算架构师认证的技术人员名单",
+    "category": "PERSONNEL",
+    "expected_doc_titles": ["云计算", "架构师", "认证", "技术"],
+    "description": "架构师认证查询"
+  },
+  {
+    "query_id": "Q015",
+    "query": "持有系统分析师资格证书的工程师",
+    "category": "PERSONNEL",
+    "expected_doc_titles": ["系统分析师", "资格证书", "工程师"],
+    "description": "系统分析师查询"
+  },
+  {
+    "query_id": "Q016",
+    "query": "数据中心建设方案的模板文档",
+    "category": "SOLUTION_TEMPLATE",
+    "expected_doc_titles": ["数据中心", "建设", "方案", "模板"],
+    "description": "数据中心方案模板"
+  },
+  {
+    "query_id": "Q017",
+    "query": "政务云平台总体架构设计模板",
+    "category": "SOLUTION_TEMPLATE",
+    "expected_doc_titles": ["政务云", "架构", "设计", "模板", "平台"],
+    "description": "政务云架构模板"
+  },
+  {
+    "query_id": "Q018",
+    "query": "网络安全等级保护 2.0 的实施方案模板",
+    "category": "SOLUTION_TEMPLATE",
+    "expected_doc_titles": ["等保", "等级保护", "安全", "方案", "模板"],
+    "description": "等保 2.0 方案模板"
+  },
+  {
+    "query_id": "Q019",
+    "query": "大数据治理平台的建设方案参考模板",
+    "category": "SOLUTION_TEMPLATE",
+    "expected_doc_titles": ["大数据", "治理", "平台", "方案", "模板"],
+    "description": "大数据治理模板"
+  },
+  {
+    "query_id": "Q020",
+    "query": "IT 运维服务管理体系的建设方案",
+    "category": "SOLUTION_TEMPLATE",
+    "expected_doc_titles": ["运维", "IT", "管理", "体系", "方案"],
+    "description": "IT 运维方案模板"
+  }
+]

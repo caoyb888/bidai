@@ -3,6 +3,7 @@
 # ============================================================
 
 import asyncio
+import json
 import tempfile
 from pathlib import Path
 from typing import Any, cast
@@ -79,6 +80,20 @@ async def _process_document(doc_id: str, celery_task_id: str) -> dict[str, Any]:
             parsed_object_path = doc.file_path.rsplit(".", 1)[0] + "_parsed.txt"
             minio.upload_text(parse_result.text, parsed_object_path)
 
+            # 5b. 结构化片段上传 MinIO（JSON，供向量化任务使用）
+            fragments_data = [
+                {
+                    "content": f.content,
+                    "page_no": f.page_no,
+                    "fragment_type": f.fragment_type,
+                    "section_title": f.section_title,
+                }
+                for f in parse_result.fragments
+            ]
+            fragments_json = json.dumps(fragments_data, ensure_ascii=False)
+            fragments_object_path = doc.file_path.rsplit(".", 1)[0] + "_fragments.json"
+            minio.upload_text(fragments_json, fragments_object_path)
+
             # 6. 更新 kb_documents 状态
             await kb_repo.update_parse_status(
                 doc_id,
@@ -99,6 +114,7 @@ async def _process_document(doc_id: str, celery_task_id: str) -> dict[str, Any]:
                         "word_count": parse_result.word_count,
                         "is_scanned": parse_result.is_scanned,
                         "parsed_text_path": parsed_object_path,
+                        "fragments_path": fragments_object_path,
                     },
                 )
 
@@ -112,6 +128,7 @@ async def _process_document(doc_id: str, celery_task_id: str) -> dict[str, Any]:
                 "page_count": parse_result.page_count,
                 "word_count": parse_result.word_count,
                 "is_scanned": parse_result.is_scanned,
+                "fragments": len(parse_result.fragments),
             },
         )
 
@@ -122,6 +139,7 @@ async def _process_document(doc_id: str, celery_task_id: str) -> dict[str, Any]:
             "word_count": parse_result.word_count,
             "is_scanned": parse_result.is_scanned,
             "parsed_text_path": parsed_object_path,
+            "fragments_path": fragments_object_path,
         }
 
 
@@ -141,8 +159,9 @@ def process_document_task(self: Any, doc_id: str) -> dict[str, str]:
     2. 更新 ai_tasks 状态为 RUNNING
     3. 从 MinIO 下载原始文件
     4. 根据 mime_type 选择解析器（PDF/DOCX/图片）
-    5. 解析文本上传 MinIO
+    5. 解析文本和结构化片段上传 MinIO
     6. 更新 kb_documents 和 ai_tasks 状态为 SUCCESS
+    7. 成功后链式触发向量化任务
 
     失败时自动重试 3 次，最终失败更新状态为 FAILED。
     """
@@ -153,6 +172,16 @@ def process_document_task(self: Any, doc_id: str) -> dict[str, str]:
 
     try:
         result = asyncio.run(_process_document(doc_id, self.request.id))
+
+        # 链式触发向量化任务
+        from app.ai.vectorize_tasks import vectorize_document_task
+
+        vectorize_task = vectorize_document_task.delay(doc_id)
+        logger.info(
+            "Chained vectorize task triggered",
+            extra={"doc_id": doc_id, "vectorize_task_id": vectorize_task.id},
+        )
+
         return result
 
     except Exception as exc:

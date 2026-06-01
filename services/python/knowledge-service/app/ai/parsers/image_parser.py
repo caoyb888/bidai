@@ -4,7 +4,7 @@
 
 from typing import Any
 
-from app.ai.parsers.base import DocumentParser, ParseResult, count_words
+from app.ai.parsers.base import DocumentFragment, DocumentParser, ParseResult, count_words
 from app.core.logging import logger
 
 
@@ -36,7 +36,7 @@ class ImageParser(DocumentParser):
 
         result = ocr.ocr(file_path, cls=True)
         if result is None or result[0] is None:
-            return ParseResult(text="", page_count=1, word_count=0, is_scanned=True)
+            return ParseResult(fragments=[], page_count=1, word_count=0, is_scanned=True)
 
         lines: list[str] = []
         for line in result[0]:
@@ -55,7 +55,13 @@ class ImageParser(DocumentParser):
         )
 
         return ParseResult(
-            text=full_text,
+            fragments=[
+                DocumentFragment(
+                    content=full_text,
+                    page_no=1,
+                    fragment_type="TEXT",
+                )
+            ],
             page_count=1,
             word_count=word_count,
             is_scanned=True,
